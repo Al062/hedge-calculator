@@ -1,0 +1,42 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # allows manual trigger from GitHub website
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-pip build-essential git \
+            python3 python3-dev ffmpeg \
+            libsdl2-dev libsdl2-image-dev \
+            libsdl2-mixer-dev libsdl2-ttf-dev \
+            libportmidi-dev libswscale-dev \
+            libavformat-dev libavcodec-dev \
+            zlib1g-dev openjdk-17-jdk unzip zip
+          pip install buildozer cython
+
+      - name: Build APK
+        run: |
+          yes | buildozer android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: hedge-calculator-apk
+          path: bin/*.apk
